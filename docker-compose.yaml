@@ -1,0 +1,77 @@
+version: "3.9"
+
+services:
+  #Database
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - ./data/mongo:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=Quandz@@2083
+    networks:
+      - quanndb_network
+
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=Quandz@@2083
+    networks:
+      - quanndb_network
+
+  #Services
+  api-gateway:
+    image: devdeli/api-gateway:latest
+    build: 
+      context: ./ApiGateway
+    restart: always
+    ports:
+      - 8888:8888
+    depends_on:
+      - identity-service
+    networks:
+      - quanndb_network
+
+  email-service:
+    image: devdeli/email-service:latest
+    build: 
+      context: ./EmailService
+    restart: always
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongo
+      - postgres
+    networks:
+      - quanndb_network
+
+  identity-service:
+    image: devdeli/identity-service:latest
+    build: 
+      context: ./IdentityService
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/devdeli
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Quandz@@2083
+    depends_on:
+      - mongo
+      - postgres
+    networks:
+      - quanndb_network
+
+
+networks:
+  quanndb_network:
+    driver: bridge
