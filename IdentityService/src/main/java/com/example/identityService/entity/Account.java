@@ -23,5 +23,7 @@ public class Account {
     String fullname;
     Integer gender;
     String address;
+    String cloudImageId;
+    String cloudImageUrl;
     String roleId;
 }

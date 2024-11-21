@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,5 +24,5 @@ public class RolePermission {
     String roleId;
     String permissionId;
     String createdBy;
-    LocalDateTime createdDate;
+    LocalDate createdDate;
 }

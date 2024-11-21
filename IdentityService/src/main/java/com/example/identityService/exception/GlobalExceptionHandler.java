@@ -1,6 +1,7 @@
 package com.example.identityService.exception;
 
 import com.example.identityService.DTO.ApiResponse;
+import com.fasterxml.jackson.core.JsonParseException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.nio.file.AccessDeniedException;
 import java.util.Objects;
@@ -65,6 +67,28 @@ public class GlobalExceptionHandler {
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .code(errorCode.getCode())
                 .message(errorCode.getMessage())
+                .build();
+        return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
+    }
+
+    @ExceptionHandler(value = JsonParseException.class)
+    ResponseEntity<ApiResponse<?>> handleJsonParseException(JsonParseException exception){
+        ErrorCode errorCode = ErrorCode.UNKNOWN_REQUEST;
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .result(exception.getMessage())
+                .build();
+        return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
+    }
+
+    @ExceptionHandler(value = NoResourceFoundException.class)
+    ResponseEntity<ApiResponse<?>> handleNoResourceException(NoResourceFoundException exception){
+        ErrorCode errorCode = ErrorCode.UNKNOWN_REQUEST;
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .result(exception.getMessage())
                 .build();
         return ResponseEntity.status(errorCode.getStatusCode()).body(apiResponse);
     }

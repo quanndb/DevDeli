@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 
 services:
   #Database
@@ -28,10 +28,21 @@ services:
     networks:
       - quanndb_network
 
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/usr/local/etc/redis
+    restart: always
+    networks:
+      - quanndb_network
+
   #Services
   api-gateway:
     image: devdeli/api-gateway:latest
-    build: 
+    build:
       context: ./ApiGateway
     restart: always
     ports:
@@ -43,7 +54,7 @@ services:
 
   email-service:
     image: devdeli/email-service:latest
-    build: 
+    build:
       context: ./EmailService
     restart: always
     ports:
@@ -56,7 +67,7 @@ services:
 
   identity-service:
     image: devdeli/identity-service:latest
-    build: 
+    build:
       context: ./IdentityService
     restart: always
     ports:
@@ -70,7 +81,6 @@ services:
       - postgres
     networks:
       - quanndb_network
-
 
 networks:
   quanndb_network:

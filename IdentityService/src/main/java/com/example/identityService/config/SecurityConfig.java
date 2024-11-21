@@ -25,7 +25,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     String[] PUBLIC_ENDPOINTS = {
-            "/auth/**"
+            "/auth/**",
+            "/roles/**"
     };
 
     CustomJwtDecoder jwtDecoder;
