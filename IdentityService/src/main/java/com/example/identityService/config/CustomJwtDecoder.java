@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 
 
@@ -22,7 +21,8 @@ public class CustomJwtDecoder implements JwtDecoder {
     @Override
     public Jwt decode(String token){
         boolean isValidToken = tokenService.verifyToken(token);
-        if(!isValidToken) throw new AppExceptions(ErrorCode.UNAUTHENTICATED);
+        var scopeClaim = tokenService.extractClaims(token).get("scope");
+        if(!isValidToken || scopeClaim == null) throw new AppExceptions(ErrorCode.UNAUTHENTICATED);
         return tokenService.getTokenDecoded(token);
     }
 }

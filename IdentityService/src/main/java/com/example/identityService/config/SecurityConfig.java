@@ -30,7 +30,6 @@ public class SecurityConfig {
     };
 
     CustomJwtDecoder jwtDecoder;
-    //JwtConverter converter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

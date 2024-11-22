@@ -1,16 +1,13 @@
 package com.example.identityService.controller;
 
 import com.example.identityService.DTO.ApiResponse;
-import com.example.identityService.DTO.request.ChangePasswordRequestDTO;
-import com.example.identityService.DTO.request.LoginRequestDTO;
-import com.example.identityService.DTO.request.RegisterRequestDTO;
-import com.example.identityService.DTO.request.UpdateProfileRequestDTO;
+import com.example.identityService.DTO.request.*;
 import com.example.identityService.DTO.response.LoginResponseDTO;
 import com.example.identityService.DTO.response.UserResponseDTO;
+import com.example.identityService.Util.IpChecker;
 import com.example.identityService.Util.JsonMapper;
 import com.example.identityService.Util.ObjectValidator;
 import com.example.identityService.service.AuthService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -33,8 +30,9 @@ public class AuthController {
     JsonMapper jsonMapper;
 
     @PostMapping("/login")
-    public ApiResponse<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto){
-        var res = authService.login(dto);
+    public ApiResponse<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto, HttpServletRequest request){
+        String ip = IpChecker.getClientIpFromRequest(request);
+        var res = authService.login(dto, ip);
         return ApiResponse.<LoginResponseDTO>builder()
                 .code(200)
                 .result(res)
@@ -42,19 +40,60 @@ public class AuthController {
     }
 
     @PostMapping("/registration")
-    public ApiResponse<Boolean> register(@RequestBody @Valid RegisterRequestDTO dto){
+    public ApiResponse<Boolean> register(@RequestBody @Valid RegisterRequestDTO dto, HttpServletRequest request){
+        String ip = IpChecker.getClientIpFromRequest(request);
         return ApiResponse.<Boolean>builder()
                 .code(200)
-                .result(authService.register(dto))
+                .message("Please check your verification email")
+                .result(authService.register(dto, ip))
+                .build();
+    }
+
+    @GetMapping("/verification")
+    public ApiResponse<Object> verifyEmailAndIP(@RequestParam String token, HttpServletRequest request){
+        String ip = IpChecker.getClientIpFromRequest(request);
+        return ApiResponse.<Object>builder()
+                .code(200)
+                .result(authService.verifyEmailAndIP(token, ip))
                 .build();
     }
 
     @PostMapping("/logout")
-    public ApiResponse<Boolean> logout(HttpServletRequest request){
-        String token = request.getHeader("Authorization").substring(7);
+    public ApiResponse<Boolean> logout(HttpServletRequest requestHeader, @RequestBody @Valid LogoutRequestDTO requestBody){
+        String accessToken = requestHeader.getHeader("Authorization").substring(7);
+        String refreshToken = requestBody.getRefreshToken();
         return ApiResponse.<Boolean>builder()
                 .code(200)
-                .message(authService.logout(token)?"ok":"fail")
+                .message(authService.logout(accessToken, refreshToken)?"ok":"fail")
+                .build();
+    }
+
+    @PostMapping("/forgotPasswordProcess")
+    public ApiResponse<Boolean> fogotPasswordAttemp(@RequestParam String email, HttpServletRequest request){
+        String ip = IpChecker.getClientIpFromRequest(request);
+        return ApiResponse.<Boolean>builder()
+                .code(200)
+                .message(authService.forgotPassword(email, ip)?"check your email to reset password":"fail")
+                .build();
+    }
+
+    @PostMapping("/resetPasswordProcess")
+    public ApiResponse<Boolean> resetPassword(@RequestBody @Valid ResetPasswordRequestDTO passwordRequestDTO, HttpServletRequest request){
+        String ip = IpChecker.getClientIpFromRequest(request);
+        return ApiResponse.<Boolean>builder()
+                .code(200)
+                .message(authService
+                        .resetPassword(passwordRequestDTO.getToken(),
+                                passwordRequestDTO.getNewPassword(), ip)?"ok":"fail")
+                .build();
+    }
+
+    @GetMapping("/token")
+    public ApiResponse<String> getNewAccessToken(@RequestBody @Valid GetNewTokenRequestDTO requestBody){
+        String refreshToken = requestBody.getRefreshToken();
+        return ApiResponse.<String>builder()
+                .code(200)
+                .result(authService.getNewAccessToken(refreshToken))
                 .build();
     }
 
@@ -84,10 +123,11 @@ public class AuthController {
     }
 
     @PutMapping("/me/password")
-    public ApiResponse<Boolean> changePassword(@RequestBody @Valid ChangePasswordRequestDTO request){
+    public ApiResponse<Boolean> changePassword(@RequestBody @Valid ChangePasswordRequestDTO changePasswordDTO, HttpServletRequest request){
+        String ip = IpChecker.getClientIpFromRequest(request);
         return ApiResponse.<Boolean>builder()
                 .code(200)
-                .message(authService.changePassword(request)?"ok":"fail")
+                .message(authService.changePassword(changePasswordDTO, ip)?"ok":"fail")
                 .build();
     }
 }

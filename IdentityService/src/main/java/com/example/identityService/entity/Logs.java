@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -14,17 +16,13 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Account {
+public class Logs {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
     String email;
-    String password;
-    String fullname;
-    boolean isVerified;
-    Integer gender;
-    String address;
-    String cloudImageId;
-    String cloudImageUrl;
-    String roleId;
+    String ip;
+    String actionName;
+    LocalDateTime dateTime;
+    String note;
 }

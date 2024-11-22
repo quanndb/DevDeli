@@ -50,6 +50,8 @@ dependencies {
 	implementation 'io.lettuce:lettuce-core:6.3.2.RELEASE'
 	// cloudinary
 	implementation 'com.cloudinary:cloudinary-http44:1.32.2'
+	// mail
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	// test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

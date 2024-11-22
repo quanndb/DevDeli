@@ -31,7 +31,11 @@ public enum ErrorCode {
     PERMISSION_NOTFOUND(410, "Cannot found this permission", HttpStatus.BAD_REQUEST),
     ROLE_PERMISSION_NOTFOUND(411, "Cannot found this role-permission", HttpStatus.BAD_REQUEST),
     ROLE_PERMISSION_EXISTED(412, "This role permission existed", HttpStatus.BAD_REQUEST),
-    NOTFOUND_EMAIL(413, "Cannot found your email", HttpStatus.BAD_REQUEST)
+    NOTFOUND_EMAIL(413, "Cannot found your email", HttpStatus.BAD_REQUEST),
+    NOT_VERIFY_ACCOUNT(414, "You're account is not verified", HttpStatus.BAD_REQUEST),
+    TOO_MUCH_LOGIN_FAIL(415, "You're attemp login fail too much and not able to login with this account in 30min", HttpStatus.BAD_REQUEST),
+    TOO_MUCH_FORGOT_PASSWORD_ATTEMPT(416, "Too much forgot password attempt", HttpStatus.BAD_REQUEST),
+    UNKNOWN_IP_REQUESTED(417, "Unknown IP has been requested, please confirm in your email", HttpStatus.BAD_REQUEST)
     ;
 
 

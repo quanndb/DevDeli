@@ -5,14 +5,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
+import java.time.LocalDateTime;
+
 @Getter
-@Builder
+@Setter
 @AllArgsConstructor
-public class LoginResponseDTO {
-    String accessToken;
-    String refreshToken;
+@Builder
+public class LoggerResponseDTO {
+    String id;
     String email;
-    String fullname;
-    String cloudImageUrl;
+    String ip;
+    String actionName;
+    String dateTime;
+    String note;
 }
