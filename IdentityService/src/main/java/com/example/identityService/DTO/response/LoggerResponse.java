@@ -5,17 +5,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @Builder
-public class LoggerResponseDTO {
-    String id;
-    String email;
-    String ip;
-    String actionName;
-    String dateTime;
-    String note;
+public class LoggerResponse {
+    private String id;
+    private String email;
+    private String ip;
+    private String actionName;
+    private String dateTime;
+    private String note;
 }

@@ -1,11 +1,11 @@
 package com.example.identityService.service;
 
-import com.example.identityService.DTO.response.LoggerResponseDTO;
-import com.example.identityService.DTO.response.PageResponseDTO;
+import com.example.identityService.DTO.response.LoggerResponse;
+import com.example.identityService.DTO.response.PageResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class ActionLogService {
 
-    @Autowired
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     @Transactional
-    public PageResponseDTO<LoggerResponseDTO> callProcedure(int page, int size, String query, String sortedBy, String sortDirection) {
+    public PageResponse<LoggerResponse> callProcedure(int page, int size, String query, String sortedBy, String sortDirection) {
         // Tạo query để gọi procedure
         StoredProcedureQuery spQuery = entityManager.createNamedStoredProcedureQuery("sp_get_logs");
 
@@ -39,10 +39,10 @@ public class ActionLogService {
         // Lấy kết quả từ REF_CURSOR
         List<Object[]> results = spQuery.getResultList();
 
-        List<LoggerResponseDTO> res = new ArrayList<>();
+        List<LoggerResponse> res = new ArrayList<>();
 
         for(Object[] item : results){
-            res.add(LoggerResponseDTO.builder()
+            res.add(LoggerResponse.builder()
                             .id(item[0].toString())
                             .email(item[1].toString())
                             .ip(item[2].toString())
@@ -52,7 +52,7 @@ public class ActionLogService {
                     .build());
         }
 
-        return PageResponseDTO.<LoggerResponseDTO>builder()
+        return PageResponse.<LoggerResponse>builder()
                 .page(page)
                 .size(size)
                 .isLast(Objects.equals(page, totalRecords))

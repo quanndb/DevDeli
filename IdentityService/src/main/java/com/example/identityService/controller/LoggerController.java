@@ -1,12 +1,8 @@
 package com.example.identityService.controller;
 
 import com.example.identityService.DTO.ApiResponse;
-import com.example.identityService.DTO.response.LoggerResponseDTO;
-import com.example.identityService.DTO.response.PageResponseDTO;
 import com.example.identityService.service.LoggerService;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,10 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/logs")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LoggerController {
 
-    LoggerService loggerService;
+    private final LoggerService loggerService;
 
     @GetMapping
     public ApiResponse<Object> getLogs(

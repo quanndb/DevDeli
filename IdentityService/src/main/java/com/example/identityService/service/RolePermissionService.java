@@ -1,32 +1,23 @@
 package com.example.identityService.service;
 
-import com.example.identityService.entity.Permission;
 import com.example.identityService.entity.RolePermission;
 import com.example.identityService.exception.AppExceptions;
 import com.example.identityService.exception.ErrorCode;
 import com.example.identityService.repository.IPermissionRepository;
 import com.example.identityService.repository.IRolePermissionRepository;
 import com.example.identityService.repository.IRoleRepository;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
 public class RolePermissionService {
-    IRoleRepository roleRepository;
-    IPermissionRepository permissionRepository;
-    IRolePermissionRepository rolePermissionRepository;
+    private final IRoleRepository roleRepository;
+    private final IPermissionRepository permissionRepository;
+    private final IRolePermissionRepository rolePermissionRepository;
 
     public boolean assignPermission(String roleId, String permissionId){
         roleRepository.findById(roleId).orElseThrow(()-> new AppExceptions(ErrorCode.ROLE_NOTFOUND));

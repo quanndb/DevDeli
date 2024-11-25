@@ -9,10 +9,10 @@ import lombok.Setter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class UserResponseDTO {
-    String email;
-    String fullname;
-    String address;
-    Integer gender;
-    String cloudImageUrl;
+public class UserResponse {
+    private String email;
+    private String fullname;
+    private String address;
+    private Integer gender;
+    private String cloudImageUrl;
 }

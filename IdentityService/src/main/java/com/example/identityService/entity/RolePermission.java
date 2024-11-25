@@ -4,11 +4,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -16,13 +18,12 @@ import java.time.LocalDateTime;
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class RolePermission {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
-    String roleId;
-    String permissionId;
-    String createdBy;
-    LocalDate createdDate;
+    private String id;
+    private String roleId;
+    private String permissionId;
+    private String createdBy;
+    private LocalDate createdDate;
 }

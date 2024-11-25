@@ -12,10 +12,7 @@ import com.example.identityService.repository.IRoleRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,7 +20,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.encrypt.KeyStoreKeyFactory;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 
@@ -36,28 +32,23 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @EnableConfigurationProperties(AuthenticationProperties.class)
 public class TokenService implements InitializingBean {
 
-    @NonFinal
     @Value(value = "${security.authentication.jwt.access-token-life-time}")
-    String ACCESS_TOKEN_LIFE_TIME;
-    @NonFinal
+    private String ACCESS_TOKEN_LIFE_TIME;
     @Value(value = "${security.authentication.jwt.refresh-token-life-time}")
-    String REFRESH_TOKEN_LIFE_TIME;
-    @NonFinal
+    private String REFRESH_TOKEN_LIFE_TIME;
     @Value(value = "${security.authentication.jwt.email-token-life-time}")
-    String EMAIL_TOKEN_LIFE_TIME;
+    private String EMAIL_TOKEN_LIFE_TIME;
 
-    @NonFinal
-    KeyPair keyPair;
-    AuthenticationProperties properties;
+    private KeyPair keyPair;
+    private final AuthenticationProperties properties;
 
-    RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    IRoleRepository roleRepository;
-    RolePermissionService rolePermissionService;
+    private final IRoleRepository roleRepository;
+    private final RolePermissionService rolePermissionService;
 
     @Override
     public void afterPropertiesSet() {

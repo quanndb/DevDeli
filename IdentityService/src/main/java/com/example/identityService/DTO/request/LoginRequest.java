@@ -5,11 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
 @Getter
-public class LoginRequestDTO {
-
+public class LoginRequest {
     @Email(message = "INVALID_EMAIL")
     @NotBlank(message = "EMAIL_PASSWORD_NOT_BLANK")
-    String email;
+    private String email;
     @NotBlank(message = "EMAIL_PASSWORD_NOT_BLANK")
-    String password;
+    private String password;
 }

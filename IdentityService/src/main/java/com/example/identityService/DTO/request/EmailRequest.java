@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class EmailRequestDTO {
+public class EmailRequest {
     @NotBlank(message = "FIELD_NOT_BLANK")
     private String subject;
     @NotBlank(message = "FIELD_NOT_BLANK")

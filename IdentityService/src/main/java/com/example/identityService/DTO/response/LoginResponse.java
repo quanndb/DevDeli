@@ -9,10 +9,10 @@ import lombok.Setter;
 @Getter
 @Builder
 @AllArgsConstructor
-public class LoginResponseDTO {
-    String accessToken;
-    String refreshToken;
-    String email;
-    String fullname;
-    String cloudImageUrl;
+public class LoginResponse {
+    private String accessToken;
+    private String refreshToken;
+    private String email;
+    private String fullname;
+    private String cloudImageUrl;
 }

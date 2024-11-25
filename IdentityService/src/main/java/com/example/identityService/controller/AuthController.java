@@ -1,18 +1,22 @@
 package com.example.identityService.controller;
 
 import com.example.identityService.DTO.ApiResponse;
-import com.example.identityService.DTO.request.*;
-import com.example.identityService.DTO.response.LoginResponseDTO;
-import com.example.identityService.DTO.response.UserResponseDTO;
+import com.example.identityService.DTO.request.LoginRequest;
+import com.example.identityService.DTO.request.LogoutRequest;
+import com.example.identityService.DTO.request.RegisterRequest;
+import com.example.identityService.DTO.request.ChangePasswordRequest;
+import com.example.identityService.DTO.request.UpdateProfileRequest;
+import com.example.identityService.DTO.request.GetNewTokenRequest;
+import com.example.identityService.DTO.request.ResetPasswordRequest;
+import com.example.identityService.DTO.response.LoginResponse;
+import com.example.identityService.DTO.response.UserResponse;
 import com.example.identityService.Util.IpChecker;
 import com.example.identityService.Util.JsonMapper;
 import com.example.identityService.Util.ObjectValidator;
 import com.example.identityService.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,26 +25,25 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthController {
 
-    AuthService authService;
+    private final AuthService authService;
 
-    ObjectValidator objectValidator;
-    JsonMapper jsonMapper;
+    private final ObjectValidator objectValidator;
+    private final JsonMapper jsonMapper;
 
     @PostMapping("/login")
-    public ApiResponse<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto, HttpServletRequest request){
+    public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest dto, HttpServletRequest request){
         String ip = IpChecker.getClientIpFromRequest(request);
         var res = authService.login(dto, ip);
-        return ApiResponse.<LoginResponseDTO>builder()
+        return ApiResponse.<LoginResponse>builder()
                 .code(200)
                 .result(res)
                 .build();
     }
 
     @PostMapping("/registration")
-    public ApiResponse<Boolean> register(@RequestBody @Valid RegisterRequestDTO dto, HttpServletRequest request){
+    public ApiResponse<Boolean> register(@RequestBody @Valid RegisterRequest dto, HttpServletRequest request){
         String ip = IpChecker.getClientIpFromRequest(request);
         return ApiResponse.<Boolean>builder()
                 .code(200)
@@ -52,14 +55,14 @@ public class AuthController {
     @GetMapping("/verification")
     public ApiResponse<Object> verifyEmailAndIP(@RequestParam String token, HttpServletRequest request){
         String ip = IpChecker.getClientIpFromRequest(request);
-        return ApiResponse.<Object>builder()
+        return ApiResponse.builder()
                 .code(200)
                 .result(authService.verifyEmailAndIP(token, ip))
                 .build();
     }
 
     @PostMapping("/logout")
-    public ApiResponse<Boolean> logout(HttpServletRequest requestHeader, @RequestBody @Valid LogoutRequestDTO requestBody){
+    public ApiResponse<Boolean> logout(HttpServletRequest requestHeader, @RequestBody @Valid LogoutRequest requestBody){
         String accessToken = requestHeader.getHeader("Authorization").substring(7);
         String refreshToken = requestBody.getRefreshToken();
         return ApiResponse.<Boolean>builder()
@@ -78,7 +81,7 @@ public class AuthController {
     }
 
     @PostMapping("/resetPasswordProcess")
-    public ApiResponse<Boolean> resetPassword(@RequestBody @Valid ResetPasswordRequestDTO passwordRequestDTO, HttpServletRequest request){
+    public ApiResponse<Boolean> resetPassword(@RequestBody @Valid ResetPasswordRequest passwordRequestDTO, HttpServletRequest request){
         String ip = IpChecker.getClientIpFromRequest(request);
         return ApiResponse.<Boolean>builder()
                 .code(200)
@@ -89,7 +92,7 @@ public class AuthController {
     }
 
     @GetMapping("/token")
-    public ApiResponse<String> getNewAccessToken(@RequestBody @Valid GetNewTokenRequestDTO requestBody){
+    public ApiResponse<String> getNewAccessToken(@RequestBody @Valid GetNewTokenRequest requestBody){
         String refreshToken = requestBody.getRefreshToken();
         return ApiResponse.<String>builder()
                 .code(200)
@@ -98,8 +101,8 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ApiResponse<UserResponseDTO> getProfile(){
-        return ApiResponse.<UserResponseDTO>builder()
+    public ApiResponse<UserResponse> getProfile(){
+        return ApiResponse.<UserResponse>builder()
                 .code(200)
                 .result(authService.getProfile())
                 .build();
@@ -110,10 +113,10 @@ public class AuthController {
             @RequestParam(value = "userData", required = false) String userData,
             @RequestParam(value = "image", required = false) MultipartFile image) throws IOException {
 
-        UpdateProfileRequestDTO updateRequest = null;
+        UpdateProfileRequest updateRequest = null;
         if(userData != null){
             updateRequest = jsonMapper
-                    .JSONToObject(userData, UpdateProfileRequestDTO.class);
+                    .JSONToObject(userData, UpdateProfileRequest.class);
             objectValidator.validateObject(updateRequest);
         }
         return ApiResponse.<Boolean>builder()
@@ -123,7 +126,7 @@ public class AuthController {
     }
 
     @PutMapping("/me/password")
-    public ApiResponse<Boolean> changePassword(@RequestBody @Valid ChangePasswordRequestDTO changePasswordDTO, HttpServletRequest request){
+    public ApiResponse<Boolean> changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordDTO, HttpServletRequest request){
         String ip = IpChecker.getClientIpFromRequest(request);
         return ApiResponse.<Boolean>builder()
                 .code(200)

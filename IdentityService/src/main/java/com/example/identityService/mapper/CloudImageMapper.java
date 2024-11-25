@@ -1,6 +1,6 @@
 package com.example.identityService.mapper;
 
-import com.example.identityService.DTO.response.CloudResponseDTO;
+import com.example.identityService.DTO.response.CloudResponse;
 import org.mapstruct.Mapper;
 
 
@@ -8,8 +8,8 @@ import java.util.Map;
 
 @Mapper(componentModel = "spring")
 public interface CloudImageMapper {
-    default CloudResponseDTO toCloudResponse(Map<?, ?> map) {
-        CloudResponseDTO fileMetadata = new CloudResponseDTO();
+    default CloudResponse toCloudResponse(Map<?, ?> map) {
+        CloudResponse fileMetadata = new CloudResponse();
         if (map.containsKey("url")) {
             fileMetadata.setUrl(String.valueOf(map.get("url")));
         }

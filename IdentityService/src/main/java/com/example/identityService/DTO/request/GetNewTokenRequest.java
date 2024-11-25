@@ -4,8 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
 @Getter
-public class WriteLogRequestDTO {
+public class GetNewTokenRequest {
     @NotBlank(message = "FIELD_NOT_BLANK")
-    String actionName;
-    String note;
+    private String refreshToken;
 }

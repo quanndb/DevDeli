@@ -4,8 +4,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Entity
 @Getter
@@ -13,18 +16,17 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @RequiredArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    String id;
-    String email;
-    String password;
-    String fullname;
-    boolean isVerified;
-    Integer gender;
-    String address;
-    String cloudImageId;
-    String cloudImageUrl;
-    String roleId;
+    private String id;
+    private String email;
+    private String password;
+    private String fullname;
+    private boolean isVerified;
+    private Integer gender;
+    private String address;
+    private String cloudImageId;
+    private String cloudImageUrl;
+    private String roleId;
 }

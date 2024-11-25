@@ -5,10 +5,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
-public class ChangePasswordRequestDTO {
+public class ChangePasswordRequest {
     @NotBlank(message = "FIELD_NOT_BLANK")
-    String currentPassword;
+    private String currentPassword;
     @NotBlank(message = "FIELD_NOT_BLANK")
     @Size(min = 8, message = "PASSWORD_AT_LEAST")
-    String newPassword;
+    private String newPassword;
 }

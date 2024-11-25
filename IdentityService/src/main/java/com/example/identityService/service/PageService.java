@@ -1,12 +1,10 @@
 package com.example.identityService.service;
 
-import com.example.identityService.DTO.response.PageResponseDTO;
+import com.example.identityService.DTO.response.PageResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,12 +12,11 @@ import java.util.Objects;
 
 @Service
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class PageService<T> {
-    final EntityManager entityManager;
+    private final EntityManager entityManager;
 
     @SuppressWarnings("unchecked")
-    public PageResponseDTO<T> pageResponse(StoredProcedureQuery storedProcedureQuery){
+    public PageResponse<T> pageResponse(StoredProcedureQuery storedProcedureQuery){
         storedProcedureQuery.execute();
         List<T> response = storedProcedureQuery.getResultList();
         Integer totalRecords = (Integer) storedProcedureQuery.getOutputParameterValue("total_records");
@@ -30,7 +27,7 @@ public class PageService<T> {
         String sortDirection = (String) storedProcedureQuery.getParameterValue("p_sort_direction");
         int totalPages = (int) Math.ceil((double) totalRecords / size);
 
-        return PageResponseDTO.<T>builder()
+        return PageResponse.<T>builder()
                 .page(page)
                 .size(size)
                 .isLast(Objects.equals(page, totalPages))

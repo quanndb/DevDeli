@@ -2,16 +2,16 @@ package com.example.identityService.DTO.response;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class CloudResponseDTO {
-    String url;
-    String publicId;
-    String originalFilename;
+public class CloudResponse {
+    private String url;
+    private String publicId;
+    private String originalFilename;
 }

@@ -1,9 +1,13 @@
 package com.example.identityService.service;
 
-import com.example.identityService.DTO.request.*;
-import com.example.identityService.DTO.response.CloudResponseDTO;
-import com.example.identityService.DTO.response.LoginResponseDTO;
-import com.example.identityService.DTO.response.UserResponseDTO;
+import com.example.identityService.DTO.request.EmailRequest;
+import com.example.identityService.DTO.request.ChangePasswordRequest;
+import com.example.identityService.DTO.request.LoginRequest;
+import com.example.identityService.DTO.request.RegisterRequest;
+import com.example.identityService.DTO.request.UpdateProfileRequest;
+import com.example.identityService.DTO.response.CloudResponse;
+import com.example.identityService.DTO.response.LoginResponse;
+import com.example.identityService.DTO.response.UserResponse;
 import com.example.identityService.Util.TimeConverter;
 import com.example.identityService.entity.Account;
 import com.example.identityService.entity.EnumRole;
@@ -16,9 +20,7 @@ import com.example.identityService.mapper.CloudImageMapper;
 import com.example.identityService.repository.IAccountRepository;
 import com.example.identityService.repository.ILoggerRepository;
 import io.jsonwebtoken.Claims;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -36,51 +38,50 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthService {
 
     @NonFinal
     @Value(value = "${app.baseUrl}")
-    String APP_BASEURL;
+    private String APP_BASEURL;
 
     @NonFinal
     @Value(value = "${security.authentication.max-login-attempt}")
-    Integer MAX_LOGIN_ATTEMPT;
+    private Integer MAX_LOGIN_ATTEMPT;
     @NonFinal
     @Value(value = "${security.authentication.login-delay-fail}")
-    String LOGIN_DELAY_FAIL;
+    private String LOGIN_DELAY_FAIL;
     @NonFinal
     @Value(value = "${security.authentication.max-forgot-password-attempt}")
-    Integer MAX_FORGOT_PASSWORD_ATTEMPT;
+    private Integer MAX_FORGOT_PASSWORD_ATTEMPT;
     @NonFinal
     @Value(value = "${security.authentication.delay-forgot-password}")
-    String DELAY_FORGOT_PASSWORD;
+    private String DELAY_FORGOT_PASSWORD;
 
     @NonFinal
     @Value(value = "${security.authentication.jwt.access-token-life-time}")
-    String ACCESS_TOKEN_LIFE_TIME;
+    private String ACCESS_TOKEN_LIFE_TIME;
     @NonFinal
     @Value(value = "${security.authentication.jwt.refresh-token-life-time}")
-    String REFRESH_TOKEN_LIFE_TIME;
+    private String REFRESH_TOKEN_LIFE_TIME;
     @NonFinal
     @Value(value = "${security.authentication.jwt.email-token-life-time}")
-    String EMAIL_TOKEN_LIFE_TIME;
+    private String EMAIL_TOKEN_LIFE_TIME;
 
-    IAccountRepository accountRepository;
-    PasswordEncoder passwordEncoder;
-    TokenService tokenService;
+    private final IAccountRepository accountRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
-    CloudinaryService cloudinaryService;
-    CloudImageMapper cloudImageMapper;
-    EmailService emailService;
-    ILoggerRepository loggerRepository;
+    private final CloudinaryService cloudinaryService;
+    private final CloudImageMapper cloudImageMapper;
+    private final EmailService emailService;
+    private final ILoggerRepository loggerRepository;
 
-    RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    AccountMapper accountMapper;
+    private final AccountMapper accountMapper;
 
     // -----------------------------Login logout start-------------------------------
-    public LoginResponseDTO login(LoginRequestDTO request, String ip){
+    public LoginResponse login(LoginRequest request, String ip){
         Account account = getAccountByEmail(request.getEmail());
         if(!account.isVerified()) throw new AppExceptions(ErrorCode.NOT_VERIFY_ACCOUNT);
         boolean success = passwordEncoder.matches(request.getPassword(), account.getPassword());
@@ -100,7 +101,7 @@ public class AuthService {
         return loginProcess(account, ip);
     }
 
-    public LoginResponseDTO loginProcess(Account account, String ip){
+    public LoginResponse loginProcess(Account account, String ip){
         boolean isNewIp = !loggerRepository.existsByEmailAndIp(account.getEmail(),ip);
         if(isNewIp){
             sendConfirmValidIp(account.getEmail(), ip);
@@ -115,7 +116,7 @@ public class AuthService {
                 .email(account.getEmail())
                 .ip(ip)
                 .build());
-        return LoginResponseDTO.builder()
+        return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .email(account.getEmail())
@@ -136,14 +137,14 @@ public class AuthService {
         String verifyToken = tokenService.generateTempEmailToken(email,ip);
         String verifyUrl = String.join("",APP_BASEURL,"auth/verification?token=",verifyToken);
         emailService
-                .sendEmail(new EmailRequestDTO("Confirm that is you",
+                .sendEmail(new EmailRequest("Confirm that is you",
                         String.join(" ","Please click here to confirm your IP", verifyUrl)
                         ,List.of(email)));
     }
     // -----------------------------Login logout end-------------------------------
 
     // -----------------------------Registration flow start-------------------------------
-    public boolean register(RegisterRequestDTO request, String ip){
+    public boolean register(RegisterRequest request, String ip){
         accountRepository
                 .findByEmail(request.getEmail())
                 .ifPresent(_ -> {
@@ -169,7 +170,7 @@ public class AuthService {
         String verifyToken = tokenService.generateTempEmailToken(email, ip);
         String verifyUrl = String.join("",APP_BASEURL,"auth/verification?token=",verifyToken);
         emailService
-                .sendEmail(new EmailRequestDTO("Confirm your registration",
+                .sendEmail(new EmailRequest("Confirm your registration",
                                 String.join(" ","Please click here to confirm your registration", verifyUrl)
                                 ,List.of(email)));
     }
@@ -204,9 +205,9 @@ public class AuthService {
 
     // -----------------------------User information start-------------------------------
     // profile
-    public UserResponseDTO getProfile() {
+    public UserResponse getProfile() {
         Account foundUser = getCurrentUser();
-        return UserResponseDTO.builder()
+        return UserResponse.builder()
                 .email(foundUser.getEmail())
                 .address(foundUser.getAddress())
                 .fullname(foundUser.getFullname())
@@ -215,7 +216,7 @@ public class AuthService {
                 .build();
     }
 
-    public boolean updateProfile(UpdateProfileRequestDTO request, MultipartFile image) throws IOException {
+    public boolean updateProfile(UpdateProfileRequest request, MultipartFile image) throws IOException {
         Account foundUser = getCurrentUser();
         if(request != null){
             accountMapper.updateAccount(foundUser, request);
@@ -226,7 +227,7 @@ public class AuthService {
                 cloudinaryService.delete(oldCloudId);
             }
             Map<?,?> cloudResponse = cloudinaryService.upload(image);
-            CloudResponseDTO cloudResponseDTO = cloudImageMapper.toCloudResponse(cloudResponse);
+            CloudResponse cloudResponseDTO = cloudImageMapper.toCloudResponse(cloudResponse);
             foundUser.setCloudImageId(cloudResponseDTO.getPublicId());
             foundUser.setCloudImageUrl(cloudResponseDTO.getUrl());
         }
@@ -235,7 +236,7 @@ public class AuthService {
     }
 
     // password
-    public boolean changePassword(ChangePasswordRequestDTO request, String ip) {
+    public boolean changePassword(ChangePasswordRequest request, String ip) {
         String currentPassword = request.getCurrentPassword();
         String newPassword = request.getNewPassword();
         if(currentPassword.equals(newPassword)) throw new AppExceptions(ErrorCode.PASSWORD_MUST_DIFFERENCE);
@@ -307,14 +308,14 @@ public class AuthService {
 
         String verifyUrl = String.join("",APP_BASEURL,"auth/resetPassword?token=",forgotPasswordToken);
         emailService
-                .sendEmail(new EmailRequestDTO("Confirm your reset password process",
+                .sendEmail(new EmailRequest("Confirm your reset password process",
                         String.join(" ","Please click here to reset password", verifyUrl)
                         ,List.of(email)));
     }
 
     public void sendResetPasswordSuccess(String email){
         emailService
-                .sendEmail(new EmailRequestDTO("Change password successfully",
+                .sendEmail(new EmailRequest("Change password successfully",
                         String.join(" ","Your password has been set at", LocalDateTime.now().toString())
                         ,List.of(email)));
     }
