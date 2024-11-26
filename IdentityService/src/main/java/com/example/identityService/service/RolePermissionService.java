@@ -1,35 +1,44 @@
 package com.example.identityService.service;
 
+import com.example.identityService.DTO.PermissionScope;
 import com.example.identityService.entity.RolePermission;
 import com.example.identityService.exception.AppExceptions;
 import com.example.identityService.exception.ErrorCode;
-import com.example.identityService.repository.IPermissionRepository;
-import com.example.identityService.repository.IRolePermissionRepository;
-import com.example.identityService.repository.IRoleRepository;
+import com.example.identityService.repository.PermissionRepository;
+import com.example.identityService.repository.RolePermissionRepository;
+import com.example.identityService.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class RolePermissionService {
-    private final IRoleRepository roleRepository;
-    private final IPermissionRepository permissionRepository;
-    private final IRolePermissionRepository rolePermissionRepository;
+    private final RoleRepository roleRepository;
+    private final PermissionRepository permissionRepository;
+    private final RolePermissionRepository rolePermissionRepository;
 
-    public boolean assignPermission(String roleId, String permissionId){
+    @PreAuthorize("hasRole('ADMIN')")
+    public boolean assignPermission(String roleId, String permissionId, List<PermissionScope> scopes){
         roleRepository.findById(roleId).orElseThrow(()-> new AppExceptions(ErrorCode.ROLE_NOTFOUND));
         permissionRepository.findById(roleId).orElseThrow(()-> new AppExceptions(ErrorCode.PERMISSION_NOTFOUND));
-        rolePermissionRepository.findByRoleIdAndPermissionId(roleId, permissionId)
-                .ifPresent(_-> {throw new AppExceptions(ErrorCode.ROLE_PERMISSION_EXISTED);});
-        rolePermissionRepository.save(RolePermission.builder()
+        for(PermissionScope item : scopes){
+            boolean foundRolePermission = rolePermissionRepository
+                    .existsByRoleIdAndPermissionIdAndScope(roleId, permissionId, item);
+            if(!foundRolePermission){
+                rolePermissionRepository.save(RolePermission.builder()
                         .roleId(roleId)
                         .permissionId(permissionId)
-                        .createdDate(LocalDate.now())
-                        .createdBy(SecurityContextHolder.getContext().getAuthentication().getName())
-                .build());
+                        .scope(item)
+                        .build());
+            }
+        }
+
         return true;
     }
 
@@ -39,9 +48,5 @@ public class RolePermissionService {
                 .orElseThrow(() -> new AppExceptions(ErrorCode.ROLE_PERMISSION_NOTFOUND));
         rolePermissionRepository.delete(rolePermission);
         return true;
-    }
-
-    public String getAllRolePermission(String roleId){
-        return String.join(" ", rolePermissionRepository.getRolePermissions(roleId));
     }
 }

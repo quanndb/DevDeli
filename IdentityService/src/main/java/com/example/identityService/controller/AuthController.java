@@ -1,13 +1,7 @@
 package com.example.identityService.controller;
 
 import com.example.identityService.DTO.ApiResponse;
-import com.example.identityService.DTO.request.LoginRequest;
-import com.example.identityService.DTO.request.LogoutRequest;
-import com.example.identityService.DTO.request.RegisterRequest;
-import com.example.identityService.DTO.request.ChangePasswordRequest;
-import com.example.identityService.DTO.request.UpdateProfileRequest;
-import com.example.identityService.DTO.request.GetNewTokenRequest;
-import com.example.identityService.DTO.request.ResetPasswordRequest;
+import com.example.identityService.DTO.request.*;
 import com.example.identityService.DTO.response.LoginResponse;
 import com.example.identityService.DTO.response.UserResponse;
 import com.example.identityService.Util.IpChecker;
@@ -65,34 +59,37 @@ public class AuthController {
     public ApiResponse<Boolean> logout(HttpServletRequest requestHeader, @RequestBody @Valid LogoutRequest requestBody){
         String accessToken = requestHeader.getHeader("Authorization").substring(7);
         String refreshToken = requestBody.getRefreshToken();
+        boolean result = authService.logout(accessToken, refreshToken);
         return ApiResponse.<Boolean>builder()
                 .code(200)
-                .message(authService.logout(accessToken, refreshToken)?"ok":"fail")
+                .message(ApiResponse.setResponseMessage(result))
                 .build();
     }
 
-    @PostMapping("/forgotPasswordProcess")
-    public ApiResponse<Boolean> fogotPasswordAttemp(@RequestParam String email, HttpServletRequest request){
+    @PostMapping("/forgot-password")
+    public ApiResponse<Boolean> fogotPasswordAttemp(@RequestBody @Valid ForgotPasswordRequest dto, HttpServletRequest request){
         String ip = IpChecker.getClientIpFromRequest(request);
+        boolean result = authService.forgotPassword(dto.getEmail(), ip);
         return ApiResponse.<Boolean>builder()
                 .code(200)
-                .message(authService.forgotPassword(email, ip)?"check your email to reset password":"fail")
+                .message(ApiResponse.setResponseMessage(result))
                 .build();
     }
 
-    @PostMapping("/resetPasswordProcess")
+    @PostMapping("/reset-password")
     public ApiResponse<Boolean> resetPassword(@RequestBody @Valid ResetPasswordRequest passwordRequestDTO, HttpServletRequest request){
         String ip = IpChecker.getClientIpFromRequest(request);
+        boolean result = authService
+                .resetPassword(passwordRequestDTO.getToken(),
+                        passwordRequestDTO.getNewPassword(), ip);
         return ApiResponse.<Boolean>builder()
                 .code(200)
-                .message(authService
-                        .resetPassword(passwordRequestDTO.getToken(),
-                                passwordRequestDTO.getNewPassword(), ip)?"ok":"fail")
+                .message(ApiResponse.setResponseMessage(result))
                 .build();
     }
 
-    @GetMapping("/token")
-    public ApiResponse<String> getNewAccessToken(@RequestBody @Valid GetNewTokenRequest requestBody){
+    @GetMapping("/refresh-token")
+    public ApiResponse<String> getNewAccessToken(@RequestBody @Valid RefreshTokenRequest requestBody){
         String refreshToken = requestBody.getRefreshToken();
         return ApiResponse.<String>builder()
                 .code(200)
@@ -119,18 +116,20 @@ public class AuthController {
                     .JSONToObject(userData, UpdateProfileRequest.class);
             objectValidator.validateObject(updateRequest);
         }
+        boolean result = authService.updateProfile(updateRequest, image);
         return ApiResponse.<Boolean>builder()
                 .code(200)
-                .message(authService.updateProfile(updateRequest, image)?"ok":"fail")
+                .message(ApiResponse.setResponseMessage(result))
                 .build();
     }
 
-    @PutMapping("/me/password")
+    @PutMapping("/me/change-password")
     public ApiResponse<Boolean> changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordDTO, HttpServletRequest request){
         String ip = IpChecker.getClientIpFromRequest(request);
+        boolean result = authService.changePassword(changePasswordDTO, ip);
         return ApiResponse.<Boolean>builder()
                 .code(200)
-                .message(authService.changePassword(changePasswordDTO, ip)?"ok":"fail")
+                .message(ApiResponse.setResponseMessage(result))
                 .build();
     }
 }

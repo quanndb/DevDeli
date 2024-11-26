@@ -13,5 +13,5 @@ import lombok.Setter;
 public class CloudResponse {
     private String url;
     private String publicId;
-    private String originalFilename;
+    private String originalFileName;
 }

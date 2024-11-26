@@ -1,4 +1,4 @@
-package com.example.identityService.entity;
+package com.example.identityService.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

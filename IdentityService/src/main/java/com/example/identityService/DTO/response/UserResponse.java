@@ -1,5 +1,6 @@
 package com.example.identityService.DTO.response;
 
+import com.example.identityService.DTO.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +14,6 @@ public class UserResponse {
     private String email;
     private String fullname;
     private String address;
-    private Integer gender;
+    private Gender gender;
     private String cloudImageUrl;
 }

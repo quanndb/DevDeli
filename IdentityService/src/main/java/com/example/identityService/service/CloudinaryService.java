@@ -33,13 +33,13 @@ public class CloudinaryService {
     }
 
     private File convert(MultipartFile multipartFile) throws IOException {
-        String originalFilename = multipartFile.getOriginalFilename();
+        String originalFileName = multipartFile.getOriginalFilename();
 
-        if (originalFilename == null || originalFilename.isEmpty()) {
+        if (originalFileName == null || originalFileName.isEmpty()) {
             throw new IllegalArgumentException("Filename is not present in the MultipartFile.");
         }
 
-        File file = new File(System.getProperty("java.io.tmpdir"), originalFilename);
+        File file = new File(System.getProperty("java.io.tmpdir"), originalFileName);
 
         file.deleteOnExit();
 

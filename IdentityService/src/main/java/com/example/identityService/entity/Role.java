@@ -1,9 +1,6 @@
 package com.example.identityService.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.RequiredArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.AccessLevel;
@@ -23,5 +20,6 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+    @Column(nullable = false)
     private String name;
 }

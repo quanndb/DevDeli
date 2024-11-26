@@ -4,10 +4,10 @@ import com.example.identityService.Util.TimeConverter;
 import com.example.identityService.config.AuthenticationProperties;
 import com.example.identityService.entity.Account;
 import com.example.identityService.entity.Role;
-import com.example.identityService.entity.Token;
+import com.example.identityService.DTO.Token;
 import com.example.identityService.exception.AppExceptions;
 import com.example.identityService.exception.ErrorCode;
-import com.example.identityService.repository.IRoleRepository;
+import com.example.identityService.repository.RoleRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -47,8 +47,7 @@ public class TokenService implements InitializingBean {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    private final IRoleRepository roleRepository;
-    private final RolePermissionService rolePermissionService;
+    private final RoleRepository roleRepository;
 
     @Override
     public void afterPropertiesSet() {
@@ -76,7 +75,6 @@ public class TokenService implements InitializingBean {
         // get the permissions
         Role role = roleRepository.findById(account.getRoleId())
                 .orElseThrow(()->new AppExceptions(ErrorCode.ROLE_NOTFOUND));
-        String allRolePermission = rolePermissionService.getAllRolePermission(role.getId());
 
         String tokenId = UUID.randomUUID().toString();
 
@@ -87,8 +85,7 @@ public class TokenService implements InitializingBean {
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + TimeConverter.convertToMilliseconds(ACCESS_TOKEN_LIFE_TIME)))
                 .id(tokenId)
-                .claim("role", role.getName())
-                .claim("scope", String.join(" ", role.getName(), allRolePermission))
+                .claim("scope", role.getName())
                 .signWith(keyPair.getPrivate(), Jwts.SIG.RS256)
                 .compact();
     }

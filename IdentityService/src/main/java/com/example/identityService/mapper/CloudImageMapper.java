@@ -17,12 +17,12 @@ public interface CloudImageMapper {
             fileMetadata.setPublicId(String.valueOf(map.get("public_id")));
         }
         if (map.containsKey("original_filename")) {
-            fileMetadata.setOriginalFilename(
+            fileMetadata.setOriginalFileName(
                     String.valueOf(map.get("original_filename")));
         }
         if(map.containsKey("format")){
-            fileMetadata.setOriginalFilename(
-                    fileMetadata.getOriginalFilename()+"."+ map.get("format")
+            fileMetadata.setOriginalFileName(
+                    fileMetadata.getOriginalFileName()+"."+ map.get("format")
             );
         }
         return fileMetadata;

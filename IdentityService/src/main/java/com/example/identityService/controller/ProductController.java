@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
 
     @GetMapping
-    @PreAuthorize("hasRole('GET_PRODUCT')")
+    @PreAuthorize("hasPermission('products', 'READ')")
     public ApiResponse<String> getProducts(){
         return ApiResponse.<String>builder()
                 .code(200)

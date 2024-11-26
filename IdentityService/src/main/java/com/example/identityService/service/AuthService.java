@@ -1,5 +1,6 @@
 package com.example.identityService.service;
 
+import com.example.identityService.DTO.EmailEnum;
 import com.example.identityService.DTO.request.EmailRequest;
 import com.example.identityService.DTO.request.ChangePasswordRequest;
 import com.example.identityService.DTO.request.LoginRequest;
@@ -10,15 +11,16 @@ import com.example.identityService.DTO.response.LoginResponse;
 import com.example.identityService.DTO.response.UserResponse;
 import com.example.identityService.Util.TimeConverter;
 import com.example.identityService.entity.Account;
-import com.example.identityService.entity.EnumRole;
 import com.example.identityService.entity.Logs;
-import com.example.identityService.entity.Token;
+import com.example.identityService.DTO.Token;
+import com.example.identityService.entity.Role;
 import com.example.identityService.exception.AppExceptions;
 import com.example.identityService.exception.ErrorCode;
 import com.example.identityService.mapper.AccountMapper;
 import com.example.identityService.mapper.CloudImageMapper;
-import com.example.identityService.repository.IAccountRepository;
-import com.example.identityService.repository.ILoggerRepository;
+import com.example.identityService.repository.AccountRepository;
+import com.example.identityService.repository.LoggerRepository;
+import com.example.identityService.repository.RoleRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
@@ -67,14 +69,15 @@ public class AuthService {
     @Value(value = "${security.authentication.jwt.email-token-life-time}")
     private String EMAIL_TOKEN_LIFE_TIME;
 
-    private final IAccountRepository accountRepository;
+    private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
 
     private final CloudinaryService cloudinaryService;
     private final CloudImageMapper cloudImageMapper;
     private final EmailService emailService;
-    private final ILoggerRepository loggerRepository;
+    private final LoggerRepository loggerRepository;
+    private final RoleRepository roleRepository;
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -105,23 +108,17 @@ public class AuthService {
         boolean isNewIp = !loggerRepository.existsByEmailAndIp(account.getEmail(),ip);
         if(isNewIp){
             sendConfirmValidIp(account.getEmail(), ip);
-            throw new AppExceptions(ErrorCode.UNKNOWN_IP_REQUESTED);
         }
 
         String accessToken = tokenService.accessTokenFactory(account);
         String refreshToken = tokenService.generateRefreshToken(account.getEmail(), ip);
         loggerRepository.save(Logs.builder()
-                .dateTime(LocalDateTime.now())
                 .actionName("LOGIN")
-                .email(account.getEmail())
                 .ip(ip)
                 .build());
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .email(account.getEmail())
-                .fullname(account.getFullname())
-                .cloudImageUrl(account.getCloudImageUrl())
                 .build();
     }
 
@@ -137,8 +134,8 @@ public class AuthService {
         String verifyToken = tokenService.generateTempEmailToken(email,ip);
         String verifyUrl = String.join("",APP_BASEURL,"auth/verification?token=",verifyToken);
         emailService
-                .sendEmail(new EmailRequest("Confirm that is you",
-                        String.join(" ","Please click here to confirm your IP", verifyUrl)
+                .sendEmail(new EmailRequest(EmailEnum.CONFIRM_IP.getSubject(),
+                        String.join(" ",EmailEnum.CONFIRM_IP.getContent(), verifyUrl)
                         ,List.of(email)));
     }
     // -----------------------------Login logout end-------------------------------
@@ -151,14 +148,14 @@ public class AuthService {
                     throw new AppExceptions(ErrorCode.USER_EXISTED);
                 });
         Account newAccount = accountMapper.toAccount(request);
-        newAccount.setRoleId(EnumRole.USER.getId());
+        Role userRole = roleRepository.findByNameIgnoreCase("USER")
+                .orElseThrow(()-> new AppExceptions(ErrorCode.ROLE_NOTFOUND));
+        newAccount.setRoleId(userRole.getId());
         newAccount.setPassword(passwordEncoder.encode(request.getPassword()));
 
         accountRepository.save(newAccount);
         loggerRepository.save(Logs.builder()
-                        .dateTime(LocalDateTime.now())
                         .actionName("REGISTRATION")
-                        .email(newAccount.getEmail())
                         .ip(ip)
                 .build());
 
@@ -170,8 +167,8 @@ public class AuthService {
         String verifyToken = tokenService.generateTempEmailToken(email, ip);
         String verifyUrl = String.join("",APP_BASEURL,"auth/verification?token=",verifyToken);
         emailService
-                .sendEmail(new EmailRequest("Confirm your registration",
-                                String.join(" ","Please click here to confirm your registration", verifyUrl)
+                .sendEmail(new EmailRequest(EmailEnum.VERIFY_EMAIL.getSubject(),
+                                String.join(" ",EmailEnum.VERIFY_EMAIL.getContent(), verifyUrl)
                                 ,List.of(email)));
     }
 
@@ -193,9 +190,7 @@ public class AuthService {
         }
 
         loggerRepository.save(Logs.builder()
-                .dateTime(LocalDateTime.now())
                 .actionName("CONFIRM_IP")
-                .email(email)
                 .ip(ip)
                 .build());
 
@@ -249,9 +244,7 @@ public class AuthService {
         accountRepository.save(foundUser);
 
         loggerRepository.save(Logs.builder()
-                .dateTime(LocalDateTime.now())
                 .actionName("CHANGE_PASSWORD")
-                .email(foundUser.getEmail())
                 .ip(ip)
                 .build());
         return true;
@@ -278,9 +271,7 @@ public class AuthService {
         accountRepository.save(foundAccount);
 
         loggerRepository.save(Logs.builder()
-                .dateTime(LocalDateTime.now())
                 .actionName("RESET_PASSWORD")
-                .email(foundAccount.getEmail())
                 .ip(ip)
                 .build());
 
@@ -308,15 +299,15 @@ public class AuthService {
 
         String verifyUrl = String.join("",APP_BASEURL,"auth/resetPassword?token=",forgotPasswordToken);
         emailService
-                .sendEmail(new EmailRequest("Confirm your reset password process",
-                        String.join(" ","Please click here to reset password", verifyUrl)
+                .sendEmail(new EmailRequest(EmailEnum.FORGOT_PASSWORD.getSubject(),
+                        String.join(" ",EmailEnum.FORGOT_PASSWORD.getContent(), verifyUrl)
                         ,List.of(email)));
     }
 
     public void sendResetPasswordSuccess(String email){
         emailService
-                .sendEmail(new EmailRequest("Change password successfully",
-                        String.join(" ","Your password has been set at", LocalDateTime.now().toString())
+                .sendEmail(new EmailRequest(EmailEnum.RESET_PASSWORD_SUCCESS.getSubject(),
+                        String.join(" ",EmailEnum.RESET_PASSWORD_SUCCESS.getContent(), LocalDateTime.now().toString())
                         ,List.of(email)));
     }
     // -----------------------------User information end-------------------------------
@@ -334,9 +325,12 @@ public class AuthService {
     }
 
     public String getNewAccessToken(String refreshToken){
-        String email = tokenService.getTokenDecoded(refreshToken).getSubject();
-        if(!tokenService.verifyToken(refreshToken) || email == null) throw new AppExceptions(ErrorCode.UNAUTHENTICATED);
+        if(!tokenService.verifyToken(refreshToken) ||
+                Objects.isNull(tokenService.getTokenDecoded(refreshToken).getSubject())){
+            throw new AppExceptions(ErrorCode.UNAUTHENTICATED);
+        }
 
+        String email = tokenService.getTokenDecoded(refreshToken).getSubject();
         Account foundAccount = getAccountByEmail(email);
         return tokenService.accessTokenFactory(foundAccount);
     }

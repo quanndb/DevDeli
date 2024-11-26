@@ -1,5 +1,6 @@
 package com.example.identityService.DTO.request;
 
+import com.example.identityService.DTO.Gender;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +20,6 @@ public class RegisterRequest {
     private String password;
     @NotBlank(message = "FIELD_NOT_BLANK")
     private String fullname;
-    Integer gender;
+    private Gender gender;
     private String address;
 }
